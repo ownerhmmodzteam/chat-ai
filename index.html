@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Workspace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b141a; color: #e9edef; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; margin: 0; }
+        .chat-bg { background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: #0b141a; background-size: contain; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .glass-header { background: rgba(32, 44, 51, 0.98); backdrop-filter: blur(15px); z-index: 50; }
+        .msg-pop { animation: msgPop 0.2s ease-out; }
+        @keyframes msgPop { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }
+        #sidebar, #chat-main { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        @media (max-width: 767px) {
+            #sidebar { position: absolute; width: 100%; height: 100%; z-index: 10; }
+            #chat-main { position: absolute; width: 100%; height: 100%; z-index: 20; transform: translateX(100%); visibility: hidden; }
+            #chat-main.active { transform: translateX(0); visibility: visible; }
+        }
+    </style>
+</head>
+<body class="flex">
+
+    <div id="sidebar" class="w-full md:w-[400px] border-r border-gray-800 flex flex-col bg-[#111b21]">
+        <div class="h-[70px] flex items-center px-5 bg-[#202c33] border-b border-gray-700/30">
+            <h1 class="font-bold text-[22px] text-[#e9edef]">AI Chats</h1>
+        </div>
+        <div class="p-4 border-b border-gray-800/30">
+            <input type="text" placeholder="Cari kontak AI..." class="w-full bg-[#2a3942] text-sm py-2.5 px-4 rounded-xl outline-none text-[#d1d7db] placeholder-[#8696a0]">
+        </div>
+        <div class="flex-1 overflow-y-auto hide-scroll px-2 pt-2">
+            <div onclick="openChat('Gemini Pro')" class="flex items-center p-4 mb-2 hover:bg-[#202c33] rounded-2xl cursor-pointer active:bg-[#2a3942] transition">
+                <div class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-2xl mr-4 shadow-lg">G</div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-center"><h3 class="font-semibold text-white">Gemini Pro</h3><span class="text-[10px] text-[#00a884]">Online</span></div>
+                    <p class="text-sm text-[#8696a0] truncate">Asisten ramah & ceria 😊</p>
+                </div>
+            </div>
+            <div onclick="openChat('Code Pilot')" class="flex items-center p-4 mb-2 hover:bg-[#202c33] rounded-2xl cursor-pointer active:bg-[#2a3942] transition">
+                <div class="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-2xl mr-4 shadow-lg">C</div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-center"><h3 class="font-semibold text-white">Code Pilot</h3><span class="text-[10px] text-[#00a884]">Online</span></div>
+                    <p class="text-sm text-[#8696a0] truncate">Senior Developer (Serius)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="chat-main" class="flex-1 flex flex-col chat-bg relative">
+        <div class="h-[70px] glass-header flex items-center gap-4 px-4 shadow-md">
+            <button onclick="backToSidebar()" class="md:hidden text-2xl text-[#aebac1]">←</button>
+            <div id="ai-avatar" class="w-11 h-11 rounded-full flex items-center justify-center font-bold text-xl shadow-md"></div>
+            <div>
+                <h3 id="ai-name" class="font-bold text-[#e9edef] text-lg"></h3>
+                <p class="text-xs text-[#00a884]">Online</p>
+            </div>
+        </div>
+
+        <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-3 hide-scroll pb-24"></div>
+
+        <div class="p-4 glass-header flex items-center gap-3 fixed bottom-0 left-0 right-0 md:relative">
+            <input id="user-input" type="text" placeholder="Ketik pesan" class="flex-1 bg-[#2a3942] text-white py-3 px-5 rounded-2xl outline-none" onkeypress="if(event.key==='Enter')handleSendMessage()">
+            <button onclick="handleSendMessage()" class="bg-[#00a884] p-3.5 rounded-full active:scale-90 transition shadow-lg">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="white" class="rotate-45"><path d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let config = null;
+        let currentAI = "";
+        const msgContainer = document.getElementById('messages-container');
+        const chatMain = document.getElementById('chat-main');
+        const userInput = document.getElementById('user-input');
+
+        const aiSifat = {
+            "Gemini Pro": {
+                initial: "G", color: "bg-blue-600", keyId: "gemini",
+                welcome: "Halo! Aku Gemini Pro. Ada yang bisa kubantu? 😊",
+                instruction: "Kamu adalah Gemini, asisten yang sangat ramah dan ceria."
+            },
+            "Code Pilot": {
+                initial: "C", color: "bg-purple-600", keyId: "codepilot",
+                welcome: "Sistem aktif. Kirim kode untuk dianalisis.",
+                instruction: "Kamu adalah Code Pilot, ahli koding yang sangat serius dan teknis."
+            }
+        };
+
+        // Memuat API Key dari JSON
+        async function loadConfig() {
+            try {
+                const res = await fetch('config.json');
+                config = await res.json();
+                console.log("Config loaded");
+            } catch (e) {
+                appendMessage("Gagal muat config.json! Pastikan file ada.", 'self-start bg-red-900/50');
+            }
+        }
+
+        function openChat(name) {
+            currentAI = name;
+            const data = aiSifat[name];
+            document.getElementById('ai-name').innerText = name;
+            const avatar = document.getElementById('ai-avatar');
+            avatar.innerText = data.initial;
+            avatar.className = `w-11 h-11 rounded-full flex items-center justify-center font-bold text-xl shadow-md ${data.color}`;
+            
+            msgContainer.innerHTML = '';
+            appendMessage(data.welcome, 'self-start bg-[#202c33] rounded-bl-none');
+            
+            if (window.innerWidth < 768) chatMain.classList.add('active');
+        }
+
+        function backToSidebar() { chatMain.classList.remove('active'); }
+
+        async function handleSendMessage() {
+            const text = userInput.value.trim();
+            if (!text || !config) return;
+
+            appendMessage(text, 'self-end bg-[#005c4b] rounded-br-none');
+            userInput.value = '';
+            
+            const loadId = 'load-' + Date.now();
+            appendLoading(loadId);
+
+            try {
+                const key = config.api_keys[aiSifat[currentAI].keyId];
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: `Sifat: ${aiSifat[currentAI].instruction}\nPesan: ${text}` }]
+                        }]
+                    })
+                });
+
+                const result = await res.json();
+                document.getElementById(loadId)?.remove();
+                
+                const aiResponse = result.candidates[0].content.parts[0].text;
+                appendMessage(aiResponse, 'self-start bg-[#202c33] rounded-bl-none');
+            } catch (err) {
+                document.getElementById(loadId)?.remove();
+                appendMessage("Gagal kirim. Cek API Key atau jalankan via Live Server/Hosting.", 'self-start bg-red-900/50');
+            }
+        }
+
+        function appendMessage(text, cls) {
+            const div = document.createElement('div');
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            div.className = `${cls} p-3.5 rounded-2xl max-w-[85%] shadow-md msg-pop relative pb-6 mb-1`;
+            div.innerHTML = `<p class="text-[15px] whitespace-pre-wrap">${text}</p><span class="text-[10px] text-gray-400 absolute bottom-1.5 right-3">${time}</span>`;
+            msgContainer.appendChild(div);
+            msgContainer.scrollTo({ top: msgContainer.scrollHeight, behavior: 'smooth' });
+        }
+
+        function appendLoading(id) {
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = 'self-start bg-[#202c33] p-4 rounded-2xl shadow-md mb-2 flex gap-1';
+            div.innerHTML = `<div class="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"></div><div class="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style="animation-delay:0.2s"></div><div class="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style="animation-delay:0.4s"></div>`;
+            msgContainer.appendChild(div);
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+        }
+
+        window.onload = () => {
+            loadConfig();
+            setTimeout(() => openChat('Gemini Pro'), 500);
+        };
+    </script>
+</body>
+</html>
