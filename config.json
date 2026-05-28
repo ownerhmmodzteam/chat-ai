@@ -1,7 +1,7 @@
 {
-  "isMaintenance": false,
+  "isMaintenance": true,
   "versionCode": 8,
-  "message": "Update terbaru HM STREAM sudah tersedia. Yuk perbarui!",
+  "message": "Pesta Akan Dimulai",
   "downloadUrl": "https://t.me/hmmodzch",
   "targetUrl": "https://ownerhmmodzteam.github.io/HM-voice/"
 }
