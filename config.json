@@ -1,11 +1,11 @@
 {
   "isMaintenance": false,
-  "versionCode": 9,
+  "versionCode": 8,
   "dialogTitle": "Pembaruan Tersedia",
   "message": "Aplikasi Di Tutup Sementara.",
   "positiveButton": "Oke",
   "negativeButton": "Tutup",
   "downloadUrl": "https://t.me/hmmodzch",
-  "targetUrl": "https://ownerhmmodzteam.github.io/HM-voice/",
+  "targetUrl": "https://hmmodz-server.vercel.app/",
   "autoCloseDelay": 30000
 }
