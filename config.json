@@ -6,6 +6,6 @@
   "positiveButton": "Oke",
   "negativeButton": "Tutup",
   "downloadUrl": "https://t.me/hmmodzch",
-  "targetUrl": "https://ownerhmmodzteam.github.io/maintance-server/",
+  "targetUrl": "https://hmmodz-server.vercel.app/",
   "autoCloseDelay": 30000
 }
