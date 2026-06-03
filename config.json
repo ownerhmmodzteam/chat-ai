@@ -1,11 +1,11 @@
 {
   "isMaintenance": false,
-  "versionCode": 8,
+  "versionCode": 8.8,
   "dialogTitle": "Pembaruan Tersedia",
-  "message": "Aplikasi Di Tutup Sementara.",
+  "message": "Aplikasi Sudah Memiliki Versi Terbaru Silahkan Install Versi Terbaru",
   "positiveButton": "Oke",
   "negativeButton": "Tutup",
-  "downloadUrl": "https://t.me/hmmodzch",
+  "downloadUrl": "https://about-hmmodzteam.netlify.app",
   "targetUrl": "https://ownerhmmodzteam.github.io/maintance-server/",
   "autoCloseDelay": 30000
 }
