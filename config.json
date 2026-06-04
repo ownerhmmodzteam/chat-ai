@@ -1,11 +1,11 @@
 {
   "isMaintenance": false,
-  "versionCode": 8.8,
+  "versionCode": 9.1,
   "dialogTitle": "Pembaruan Tersedia",
   "message": "Aplikasi Sudah Memiliki Versi Terbaru Silahkan Install Versi Terbaru",
   "positiveButton": "Oke",
   "negativeButton": "Tutup",
   "downloadUrl": "https://about-hmmodzteam.netlify.app",
-  "targetUrl": "https://ownerhmmodzteam.github.io/maintance-server/",
+  "targetUrl": "https://hmmodz-server.vercel.app/",
   "autoCloseDelay": 30000
 }
